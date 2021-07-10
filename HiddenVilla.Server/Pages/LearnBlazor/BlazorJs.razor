@@ -1,0 +1,87 @@
+﻿@page "/blazorjs"
+@inject IJSRuntime _jSRuntime
+
+<h3>BlazorJs</h3>
+
+<div class="row">
+    <button class="btn btn-secondary" @onclick="(() => TestConfirmBox(ConfirmMessage))">Test Confirm Button</button>
+</div>
+<div class="row mt-4">
+    <button class="btn btn-success" @onclick="TestSuccess">Test Toastr Success</button>
+    <button class="btn btn-danger" @onclick="TestError">Test Toastr Error</button>
+    <button class="btn btn-warning" @onclick="TestWarning">Test Toastr Warning</button>
+    <button class="btn btn-info" @onclick="TestInfo">Test Toastr Info</button>
+</div>
+<div class="row mt-4">
+    <button class="btn btn-success" @onclick="TestSuccessSwal">Test Swal Success</button>
+    <button class="btn btn-danger" @onclick="TestErrorSwal">Test Swal Error</button>
+    <button class="btn btn-warning" @onclick="TestWarningSwal">Test Swal Warning</button>
+    <button class="btn btn-info" @onclick="TestInfoSwal">Test Swal Info</button>
+    <button class="btn btn-primary" @onclick="TestQuestionSwal">Test Swal Question</button>
+</div>
+
+<div class="row">
+    @if (ConfirmResult)
+    {
+        <p>Confirmation has been made!</p>
+    }
+    else
+    {
+        <p>Confirmation pending...</p>
+    }
+</div>
+
+@code {
+    private string ConfirmMessage = "Are you want to sure you want to click?";
+    private bool ConfirmResult { get; set; }
+
+    private async Task TestConfirmBox(string message)
+    {
+        ConfirmResult = await _jSRuntime.InvokeAsync<bool>("confirm", message);
+    }
+
+    private async Task TestSuccess()
+    {
+        await _jSRuntime.ToastrSuccess("Success Message");
+    }
+
+    private async Task TestError()
+    {
+        await _jSRuntime.ToastrError("Error Message");
+    }
+
+    private async Task TestWarning()
+    {
+        await _jSRuntime.ToastrWarning("Warning Message");
+    }
+
+    private async Task TestInfo()
+    {
+        await _jSRuntime.ToastrInfo("Info Message");
+    }
+
+    private async Task TestSuccessSwal()
+    {
+        await _jSRuntime.SwalSuccess("Successful Message");
+    }
+
+    private async Task TestErrorSwal()
+    {
+        await _jSRuntime.SwalError("Error Message");
+    }
+
+    private async Task TestWarningSwal()
+    {
+        await _jSRuntime.SwalWarning("Warning Message");
+    }
+
+    private async Task TestInfoSwal()
+    {
+        await _jSRuntime.SwalInfo("Info Message");
+    }
+
+    private async Task TestQuestionSwal()
+    {
+        await _jSRuntime.SwalQuestion("Question Message?");
+    }
+}

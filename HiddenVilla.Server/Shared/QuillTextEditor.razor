@@ -1,0 +1,84 @@
+﻿<BlazoredTextEditor @ref="@QuillHtml" Placeholder="@PlaceHolderText">
+    <ToolbarContent>
+        <select class="ql-header">
+            <option selected=""></option>
+            <option value="1"></option>
+            <option value="2"></option>
+            <option value="3"></option>
+            <option value="4"></option>
+            <option value="5"></option>
+        </select>
+        <span class="ql-formats">
+            <button class="ql-bold"></button>
+            <button class="ql-italic"></button>
+            <button class="ql-underline"></button>
+            <button class="ql-strike"></button>
+        </span>
+        <span class="ql-formats">
+            <select class="ql-color"></select>
+            <select class="ql-background"></select>
+        </span>
+        <span class="ql-formats">
+            <button class="ql-list" value="ordered"></button>
+            <button class="ql-list" value="bullet"></button>
+        </span>
+        <span class="ql-formats">
+            <button class="ql-link"></button>
+        </span>
+    </ToolbarContent>
+    <EditorContent>
+    </EditorContent>
+</BlazoredTextEditor>
+
+@code {
+    public BlazoredTextEditor QuillHtml { get; set; } = new BlazoredTextEditor();
+
+    [Parameter]
+    public string PlaceHolderText { get; set; } = "Enter text here...";
+
+    private string _textValue;
+    [Parameter]
+    public string TextValue
+    {
+        get => _textValue;
+        set
+        {
+            if (_textValue == value) return;
+
+            _textValue = value;
+            TextValueChanged.InvokeAsync(value);
+        }
+    }
+
+    [Parameter]
+    public EventCallback<string> TextValueChanged { get; set; }
+
+    protected async override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            this.TextValue = await this.QuillHtml.GetHTML();
+            StateHasChanged();
+            return;
+        }
+
+        bool loading = true;
+        while (loading)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(TextValue))
+                {
+                    await this.QuillHtml.LoadHTMLContent(TextValue);
+                    StateHasChanged();
+                }
+                loading = false;
+            }
+            catch
+            {
+                await Task.Delay(10);
+                loading = true;
+            }
+        }
+    }
+}

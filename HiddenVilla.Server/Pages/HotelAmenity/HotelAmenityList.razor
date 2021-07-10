@@ -1,0 +1,94 @@
+﻿@page "/hotel-amenity"
+@inject IAmenityRepository _amenityRepository
+@inject IJSRuntime _jsRuntime
+@inject NavigationManager _navigationManager
+@attribute [Authorize(Roles = Common.SD.RoleAdmin)]
+
+<div class="row mt-4">
+    <div class="col-6">
+        <h4 class="card-title text-info">Hotel Amenity</h4>
+    </div>
+    <div class="col-5 offset-1">
+        <NavLink href="hotel-amenity/create" class="btn btn-info form-control">Add New Amenity </NavLink>
+    </div>
+</div>
+
+<dvi class="row mt-4">
+    <div class="col-md-12">
+        <table class="table table-bordered table-hover" id="tblHotelAmenity">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Timing</th>
+                    <th>Icon</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (HotelAmenities.Any())
+                {
+                    foreach (var amenity in HotelAmenities)
+                    {
+                        <tr>
+                            <td>@amenity.Name</td>
+                            <td>@amenity.Timming</td>
+                            <td><i class="@amenity.IconStyle"></i></td>
+                            <td>
+                                <NavLink href="@($"hotel-amenity/edit/{amenity.Id}")" class="btn btn-primary">Edit</NavLink>
+                                <button class="btn btn-danger" @onclick="() => HandleDelete(amenity.Id)">Delete</button>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="9">No records found</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</dvi>
+
+<DeleteConfirmation IsParentComponentProcessing="IsProcessing" ConfirmationChanged="ConfirmDelete_Click" />
+
+@code {
+    internal IEnumerable<HotelAmenityDto> HotelAmenities { get; set; } = new List<HotelAmenityDto>();
+    internal int? DeleteAmenityId { get; set; } = null;
+    private bool IsProcessing { get; set; } = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        HotelAmenities = await _amenityRepository.GetAllHotelAmenity();
+    }
+
+    public async Task HandleDelete(int amenityId)
+    {
+        DeleteAmenityId = amenityId;
+        await _jsRuntime.InvokeVoidAsync("ShowDeleteConfirmationModal");
+    }
+
+    public async Task ConfirmDelete_Click(bool isConfirmed)
+    {
+        IsProcessing = true;
+        if (isConfirmed && DeleteAmenityId != null)
+        {
+            try
+            {
+                var results = await _amenityRepository.DeleteHotelAmenity(DeleteAmenityId.Value, "");
+                await _jsRuntime.ToastrSuccess("Amenity Deleted successfully");
+            }
+            catch (Exception ex)
+            {
+                await _jsRuntime.ToastrError(ex.Message);
+            }
+
+            HotelAmenities = await _amenityRepository.GetAllHotelAmenity();
+        }
+
+        await _jsRuntime.InvokeVoidAsync("HideDeleteConfirmationModal");
+        IsProcessing = false;
+    }
+
+}

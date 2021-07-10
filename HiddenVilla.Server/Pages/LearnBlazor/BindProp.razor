@@ -1,0 +1,117 @@
+﻿@page "/bindprop"
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@inject ProtectedLocalStorage localStorage
+@inject ProtectedSessionStorage sessionStorage
+
+
+<div class="bg-light border p-2">
+    <h2 class="bg-light border p-2">
+        First Room
+    </h2>
+    Room: @Room.Name
+    <br />
+    Price: @Room.Price
+    <br />
+
+    <input type="number" @bind-value="@Room.Price" @bind-value:event="oninput" />
+    <br />
+    <input type="checkbox" @bind-value="@Room.IsActive" checked="@Room.IsActive" /> &nbsp; Is Active
+    <br />
+    <span>This room is @(Room.IsActive ? "Active" : "In Active")</span>
+    <br />
+
+    <select @bind="selectedRoomProp">
+        @foreach (var prop in Room.RoomProps)
+        {
+            <option value="@prop.Name">@prop.Name</option>
+        }
+    </select>
+    <br />
+    <span>The Room Prop selected is: @selectedRoomProp</span>
+    <br />
+</div>
+
+<div>
+    <br />
+    <h2 class="text-info">Room List [Assignment 2]</h2>
+    <table class="table table-dark">
+        @foreach (var room in RoomsList)
+        {
+            <tr>
+                <td>
+                    <input type="text" @bind-value="@room.Name" @bind-value:event="oninput" />
+                </td>
+                <td>
+                    <input type="text" @bind-value="@room.Price" @bind-value:event="oninput" />
+                </td>
+                @foreach (var roomProp in room.RoomProps)
+                {
+                    <td>@roomProp.Name - @roomProp.Value</td>
+                }
+            </tr>
+        }
+    </table>
+    <br />
+    @foreach (var room in RoomsList)
+    {
+        <p>@room.Name's Price is @room.Price</p>
+    }
+</div>
+
+<p>Counter Value from other Page (Session) : @CounterSession</p>
+<p>Counter Value from other Page (Local) : @CounterLocal</p>
+
+@code{
+    string selectedRoomProp = string.Empty;
+    List<Room> RoomsList = new List<Room>();
+    public int CounterSession { get; set; }
+    public int CounterLocal { get; set; }
+
+    Room Room = new Room
+    {
+        Id = 1,
+        Name = "Villa Suite",
+        IsActive = true,
+        Price = 4999,
+        RoomProps = new List<RoomProp>
+    {
+            new RoomProp { Id = 1, Name = "Sq Ft", Value = "100" },
+            new RoomProp { Id = 2, Name = "Occupancy", Value = "3"}
+        }
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        var resultLocal = await localStorage.GetAsync<int>("counterLocal");
+        CounterLocal = resultLocal.Success ? resultLocal.Value : 0;
+        var resultSession = await sessionStorage.GetAsync<int>("counterSession");
+        CounterSession = resultSession.Success ? resultSession.Value : 0;
+
+        base.OnInitialized();
+        RoomsList.Add(new Room
+        {
+            Id = 1,
+            Name = "Villa Suite",
+            IsActive = true,
+            Price = 399,
+            RoomProps = new List<RoomProp>
+        {
+                new RoomProp { Id = 1, Name = "Sq Ft", Value = "100" },
+                new RoomProp { Id = 2, Name = "Occupancy", Value = "3"}
+            }
+        });
+
+        RoomsList.Add(new Room
+        {
+            Id = 2,
+            Name = "Villa Suite Two Bed Room",
+            IsActive = true,
+            Price = 699,
+            RoomProps = new List<RoomProp>
+        {
+                new RoomProp { Id = 1, Name = "Sq Ft", Value = "100" },
+                new RoomProp { Id = 2, Name = "Occupancy", Value = "3"}
+            }
+        });
+    }
+}

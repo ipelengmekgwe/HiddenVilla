@@ -1,0 +1,36 @@
+﻿<div class="bg-light border p-2 col-5 offset-1">
+    <h4 class="text-secondary">Room - @Room.Id</h4>
+    <input type="checkbox" @onchange="RoomCheckBoxSelectionChanged" />
+    @Room.Name<br />
+    @Room.Price.ToString("c")<br />
+    <input type="checkbox" @bind-value="Room.IsActive" checked="@Room.IsActive" />  Is Active<br />
+    <span>This room is @(Room.IsActive ? "Active" : "InActive")</span>
+
+    @if (Room.IsActive)
+    {
+        foreach (var roomProp in Room.RoomProps)
+        {
+            <br />
+            <span>@roomProp.Name - @roomProp.Value</span>
+        }
+    }
+
+    <br />
+    <EditDeleteButton IsAdmin="IsAdmin" />
+</div>
+
+@code {
+    [Parameter]
+    public Room Room { get; set; }
+
+    [Parameter]
+    public bool IsAdmin { get; set; }
+
+    [Parameter]
+    public EventCallback<bool> OnRoomCheckBoxSelection { get; set; }
+
+    protected async Task RoomCheckBoxSelectionChanged(ChangeEventArgs e)
+    {
+        await OnRoomCheckBoxSelection.InvokeAsync((bool)e.Value);
+    }
+}
